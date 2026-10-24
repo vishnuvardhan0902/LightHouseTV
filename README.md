@@ -162,9 +162,11 @@ Requires **JDK 17** and the **Android SDK platform 34**.
 
 or straight Gradle: `./gradlew assembleRelease -x lintVitalRelease`. The APK lands in `dist/`.
 
-The release APK is signed with a local debug key by default — enough to sideload and to upgrade over
-itself. Set `LIGHTHOUSE_KEYSTORE` (plus `LIGHTHOUSE_STORE_PASSWORD`, `LIGHTHOUSE_KEY_ALIAS`,
-`LIGHTHOUSE_KEY_PASSWORD`) to sign with your own.
+Every build — on your machine and in CI — is signed with the same **public sideload key** committed
+at `keystore/sideload.jks`, so an update installs straight over whatever you installed before,
+wherever it came from. That key is not a secret and not a security boundary; it exists only so
+upgrades work. Set `LIGHTHOUSE_KEYSTORE` (plus `LIGHTHOUSE_STORE_PASSWORD`, `LIGHTHOUSE_KEY_ALIAS`,
+`LIGHTHOUSE_KEY_PASSWORD`) to publish under your own key instead.
 
 To publish a release, push a tag: `.github/workflows/android.yml` builds on every push and attaches
 the APK to a GitHub Release for `v*` tags.

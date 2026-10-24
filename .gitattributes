@@ -10,3 +10,4 @@
 *.jar binary
 *.apk binary
 *.ttf binary
+*.jks binary

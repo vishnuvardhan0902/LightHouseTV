@@ -9,9 +9,11 @@ local.properties
 *.iml
 .DS_Store
 
-# Signing material — never commit a real keystore
+# Signing material — the only keystore this repo ships is the public sideload key, which exists so
+# updates install over each other. Any other keystore must never be committed.
 *.jks
 *.keystore
+!keystore/sideload.jks
 
 # Machine-local setup used while developing the launcher: personal build scripts, device
 # addresses, throwaway screenshots. Nothing here is needed to build or install from a clone.

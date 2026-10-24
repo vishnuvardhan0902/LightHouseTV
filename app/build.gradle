@@ -2,11 +2,14 @@ plugins {
     id 'com.android.application'
 }
 
-// A sideload-only TV app, so the signature only has to be stable, never secret: point
-// LIGHTHOUSE_KEYSTORE at your own keystore if you like, otherwise the standard debug keystore is used
-// and the Android toolchain creates it on first build.
-def tvKey = System.getenv('LIGHTHOUSE_KEYSTORE') ?: System.getenv('CYTV_DEBUG_KEYSTORE')
-def hasTvKey = tvKey != null && file(tvKey).exists()
+// A sideload-only TV app, so the signature only has to be *stable*, never secret: every build from
+// this repo — on your machine and in CI — signs with the committed keystore in keystore/, so an
+// update installs straight over the previous one. Point LIGHTHOUSE_KEYSTORE at your own keystore if
+// you would rather publish under your own identity.
+def defaultKey = rootProject.file('keystore/sideload.jks')
+def keyPath = System.getenv('LIGHTHOUSE_KEYSTORE')
+def keyFile = keyPath != null ? file(keyPath) : defaultKey
+def hasKey = keyFile.exists()
 
 android {
     namespace 'tv.lighthouse.launcher'
@@ -14,11 +17,11 @@ android {
 
     signingConfigs {
         tv {
-            if (hasTvKey) {
-                storeFile file(tvKey)
-                storePassword System.getenv('LIGHTHOUSE_STORE_PASSWORD') ?: 'android'
-                keyAlias System.getenv('LIGHTHOUSE_KEY_ALIAS') ?: 'androiddebugkey'
-                keyPassword System.getenv('LIGHTHOUSE_KEY_PASSWORD') ?: 'android'
+            if (hasKey) {
+                storeFile keyFile
+                storePassword System.getenv('LIGHTHOUSE_STORE_PASSWORD') ?: 'lighthouse'
+                keyAlias System.getenv('LIGHTHOUSE_KEY_ALIAS') ?: 'sideload'
+                keyPassword System.getenv('LIGHTHOUSE_KEY_PASSWORD') ?: 'lighthouse'
             }
         }
     }
@@ -36,7 +39,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
-            signingConfig hasTvKey ? signingConfigs.tv : signingConfigs.debug
+            // Falls back to the debug key only if the keystore is missing, so a fresh clone without
+            // the file still builds.
+            signingConfig hasKey ? signingConfigs.tv : signingConfigs.debug
         }
     }
 
