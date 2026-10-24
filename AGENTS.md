@@ -112,6 +112,43 @@ adb -s <serial> shell input keyevent KEYCODE_DPAD_RIGHT
 Down should move the arc by one app and the beam should swing once onto the new centre tile.
 Right should open the side rail with Wi-Fi above, Settings centred and Inputs below.
 
+## Step 5 (optional) — Block bloatware and tracking
+
+The user may ask you to "debloat" the TV. That changes their device rather than this repo, so always
+show them a dry run first. It prints what would change and changes nothing:
+
+```bash
+./tool/debloat.sh --serial <serial>
+```
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tool\debloat.ps1 -Serial <serial>
+```
+
+Only after they agree:
+
+```bash
+./tool/debloat.sh --apply --serial <serial>
+```
+
+```powershell
+.\tool\debloat.ps1 -Apply -Serial <serial>
+```
+
+Rules:
+
+- Add `--include-apps` / `-IncludeApps` only if the user asks for the preloaded apps to go as well.
+- Add `--disable-stock-launcher` / `-DisableStockLauncher` only if the stock launcher keeps
+  reclaiming Home, and only once LightHouse TV is confirmed as Home.
+- Never pass `--extra` a package you have not positively identified, and never disable the resolved
+  Home package, Settings, System UI, the permission controller, the installer, Play services, the
+  setup/Wi-Fi owner or the vendor input stack. The tool refuses these already; do not work around it
+  with raw `pm` commands.
+- Keep the `debloat-<tv>-<date>.txt` file the run writes, and give the user its path and the exact
+  restore command.
+- After applying, repeat the Step 4 checks, then confirm Wi-Fi, sound and one HDMI input still work.
+- If anything is wrong, `--restore <file>` puts it all back: nothing was uninstalled, so this works.
+
 ## Rebuilding from source
 
 ```bash
@@ -150,7 +187,8 @@ Without `--uninstall` it only returns Home.
 
 - Never root the TV, unlock a bootloader, flash firmware, or disable system packages as part of an
   install. None of it is needed and all of it is hard to undo.
-- Do not run `pm uninstall` on anything except `tv.lighthouse.launcher`.
+- Disabling packages is allowed only through `tool/debloat.*`, after a dry run the user has seen.
+  Never use raw `pm disable` or `pm uninstall` on anything except `tv.lighthouse.launcher`.
 - Do not change the user's network, accounts, or developer settings beyond enabling debugging if
   the user asked you to.
 - Report what you actually verified, including the commands and their output. Do not claim the

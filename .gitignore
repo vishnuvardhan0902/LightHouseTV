@@ -18,3 +18,6 @@ local.properties
 # Machine-local setup used while developing the launcher: personal build scripts, device
 # addresses, throwaway screenshots. Nothing here is needed to build or install from a clone.
 local/
+
+# Debloat restore files written by tool/debloat.*
+debloat-*.txt

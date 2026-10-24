@@ -15,32 +15,40 @@ crosses the type, and dark everywhere else.
 - **Built for a 1 GB RAM Mi TV 4I** at 720p, and runs at 60 fps there — the renderer draws only what
   changes and idles at zero frames per second when you are not touching it.
 
-**[Download the APK](https://github.com/vishnuvardhan0902/LightHouseTV/releases/latest)** ·
-**[Install in one command](#one-command-if-you-already-use-adb)** ·
-**[Ask your agent to do it](#let-your-agent-install-it)**
-
-```bash
-git clone https://github.com/vishnuvardhan0902/LightHouseTV.git
-cd LightHouseTV
-./tool/install.sh
-```
+**[Install from a laptop, step by step](docs/install-with-a-laptop.md)** ·
+**[Block the bloatware](#block-the-bloatware-and-the-tracking)** ·
+**[Download the APK](https://github.com/vishnuvardhan0902/LightHouseTV/releases/latest)**
 
 
 ---
 
 ## Install
 
+The full walkthrough — enabling debugging on the TV, connecting from the laptop, installing, taking
+Home, turning off the tracking, and undoing all of it — is
+**[docs/install-with-a-laptop.md](docs/install-with-a-laptop.md)**. Read that once; it is the
+document this project is really about.
+
+The short version:
+
+```bash
+git clone https://github.com/vishnuvardhan0902/LightHouseTV.git
+cd LightHouseTV
+chmod +x tool/*.sh
+./tool/install.sh --serial 192.168.1.9:5555
+```
+
 ### Let your agent install it
 
 Paste this to Claude Code, Cursor, Codex, or any agent with shell access:
 
 > Install LightHouse TV, the Android TV launcher in this repository, on my TV. Follow `AGENTS.md` exactly:
-> find adb, connect to the TV over the network, run the install script, then verify that Home
-> resolves to `tv.lighthouse.launcher/.MainActivity` and capture a screenshot so I can see it. My TV's IP is
-> `____`.
+> find adb, connect to the TV over the network, run the install script, verify that Home resolves to
+> `tv.lighthouse.launcher/.MainActivity`, capture a screenshot, then show me a dry run of the
+> debloat step. My TV's IP is `____`.
 
 `AGENTS.md` is written for a machine: exact commands, three objective acceptance checks, a failure
-table, and the rollback.
+table, the debloat procedure and the rollback.
 
 ### One command, if you already use adb
 
@@ -70,6 +78,37 @@ optional location permission, and makes LightHouse TV Home. For a TV on the netw
    ```bash
    adb shell cmd package set-home-activity tv.lighthouse.launcher/.MainActivity
    ```
+
+---
+
+## Block the bloatware and the tracking
+
+A stock Android TV runs analytics agents, recommendation services that upload viewing habits,
+sponsored rows on the home screen, and a pile of preloaded apps. LightHouse TV ships a tool that
+switches them off — **without uninstalling anything**, using `pm disable-user`, which is per-user,
+survives reboots and reverses with one command.
+
+```bash
+./tool/debloat.sh                  # dry run: shows what would be disabled
+./tool/debloat.sh --apply          # telemetry, recommendations, sponsored rows
+./tool/debloat.sh --apply --include-apps   # ...plus preloaded vendor apps
+```
+
+```powershell
+.\tool\debloat.ps1                 # same on Windows
+.\tool\debloat.ps1 -Apply
+```
+
+An `--apply` run writes `debloat-<tv>-<date>.txt` and prints the exact undo command:
+
+```bash
+./tool/debloat.sh --restore debloat-192.168.1.9-20261024-193000.txt
+```
+
+It refuses to touch anything the TV needs — the current Home screen, Settings, System UI, the
+permission controller, the installer, Play services, the setup/Wi-Fi owner, the input method, and the
+Amlogic/Droidlogic HDMI and tuner stack — and it re-checks that Home still resolves afterwards. The
+whole list, with sources, is in [the walkthrough](docs/install-with-a-laptop.md#the-packages-it-disables-and-why).
 
 ---
 
@@ -183,6 +222,13 @@ the APK to a GitHub Release for `v*` tags.
 On Windows, `.\tool\restore.ps1 [-Uninstall]`. By hand, the equivalent is
 `adb uninstall tv.lighthouse.launcher` — the TV falls back to its own launcher.
 
+Debloated packages are **not** touched by this. They stay disabled until you re-enable them with the
+file the debloat run wrote:
+
+```bash
+./tool/debloat.sh --restore debloat-<tv>-<date>.txt
+```
+
 ---
 
 ## If something goes wrong
@@ -206,8 +252,11 @@ app/src/main/java/tv/lighthouse/launcher/
   SoundEngine.java      the single tick
 tool/
   install.*  restore.*  build.*    the scripts, in bash and PowerShell
-AGENTS.md            machine instructions for installing and verifying
-docs/screenshots/    the images in this README
+  debloat.*                        switch off telemetry, ads and preloaded apps
+docs/
+  install-with-a-laptop.md         the full walkthrough, from stock TV to done
+  screenshots/                     the images in this README
+AGENTS.md            machine instructions for installing, verifying and debloating
 dist/                the prebuilt APK
 ```
 
