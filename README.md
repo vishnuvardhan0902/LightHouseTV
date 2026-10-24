@@ -15,7 +15,8 @@ crosses the type, and dark everywhere else.
 - **Built for a 1 GB RAM Mi TV 4I** at 720p, and runs at 60 fps there — the renderer draws only what
   changes and idles at zero frames per second when you are not touching it.
 
-**[Download the APK](../../releases/latest)** · **[Install in one command](#one-command-if-you-already-use-adb)** ·
+**[Download the APK](https://github.com/vishnuvardhan0902/LightHouseTV/releases/latest)** ·
+**[Install in one command](#one-command-if-you-already-use-adb)** ·
 **[Ask your agent to do it](#let-your-agent-install-it)**
 
 ```bash
