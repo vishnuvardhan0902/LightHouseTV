@@ -7,10 +7,12 @@ evaluate. Do not improvise around a failed check — use the failure table.
 ## Scope
 
 - Target: an Android TV / Google TV device running **Android 8.0 (API 26) or newer**.
-- LightHouse TV is a normal sideloaded APK (`tv.lighthouse.launcher`). It needs **no root**, no unlocked bootloader,
-  no system modifications, and it disables nothing.
-- The install replaces the Home screen by asking the system to prefer LightHouse TV for the `HOME` intent.
-  It is fully reversible (`tool/restore.*`).
+- LightHouse TV is a normal sideloaded APK (`tv.lighthouse.launcher`). It needs **no root** and no
+  unlocked bootloader, and the launcher itself modifies nothing on the TV.
+- The install changes one system setting: which app answers the `HOME` intent. Fully reversible
+  (`tool/restore.*`).
+- Disabling bloatware is a **separate, opt-in step** (Step 5) with its own dry run and undo. Do not
+  fold it into an install.
 
 If the device is a Roku, LG webOS, Samsung Tizen, or an Amazon Fire TV with a locked bootloader, stop
 and tell the user LightHouse TV cannot be installed there. Fire TV OS blocks third-party Home replacement
@@ -99,8 +101,8 @@ adb -s <serial> shell cmd package resolve-activity --brief \
    failure.
 
 If Home does not resolve to LightHouse TV, the firmware is pinning its own launcher. That is not fatal:
-the user can press HOME and pick LightHouse TV → *Always*. Report it, do not attempt to disable system
-packages unless the user explicitly asks.
+the user can press HOME and pick LightHouse TV → *Always*. Do not start disabling system packages as a
+workaround; the only supported path is Step 5, and only if the user asks for it.
 
 ## Optional — remote smoke test
 
@@ -156,9 +158,9 @@ Rules:
 .\tool\build.ps1         # Windows
 ```
 
-Requires JDK 17+ and Android SDK platform 34. The build writes `dist/lighthouse-tv-1.0.0.apk`. The APK is
-signed with a local debug key by default so upgrades install over each other; set `LIGHTHOUSE_KEYSTORE`
-to sign with your own.
+Requires JDK 17+ and Android SDK platform 34. The build writes `dist/lighthouse-tv-1.0.0.apk`, signed
+with the public sideload key committed at `keystore/sideload.jks` so updates install over each other.
+Set `LIGHTHOUSE_KEYSTORE` to sign with your own.
 
 ## Rollback
 
@@ -185,8 +187,8 @@ Without `--uninstall` it only returns Home.
 
 ## Guardrails
 
-- Never root the TV, unlock a bootloader, flash firmware, or disable system packages as part of an
-  install. None of it is needed and all of it is hard to undo.
+- Never root the TV, unlock a bootloader, or flash firmware. None of it is needed and all of it is
+  hard to undo.
 - Disabling packages is allowed only through `tool/debloat.*`, after a dry run the user has seen.
   Never use raw `pm disable` or `pm uninstall` on anything except `tv.lighthouse.launcher`.
 - Do not change the user's network, accounts, or developer settings beyond enabling debugging if

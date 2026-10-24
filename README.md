@@ -9,11 +9,17 @@ crosses the type, and dark everywhere else.
 
 ![LightHouse TV home screen](docs/screenshots/home.jpg)
 
-- **No dependencies.** No AndroidX, no libraries, one APK of a few hundred KB.
-- **No root, no system modifications.** It is a normal sideloaded app that asks to be Home.
-- **Nothing is disabled or debloated.** Uninstalling leaves the TV exactly as it was.
-- **Built for a 1 GB RAM Mi TV 4I** at 720p, and runs at 60 fps there — the renderer draws only what
-  changes and idles at zero frames per second when you are not touching it.
+Two things, deliberately separate:
+
+- **The launcher** — a normal sideloaded app that asks to be Home. No root, no unlocked bootloader,
+  no libraries (no AndroidX), one APK of a few hundred KB. Uninstalling it puts the stock Home back.
+- **The cleanup** — an optional step that switches off telemetry, recommendation services, sponsored
+  rows and preloaded apps. It does not uninstall anything, it is a separate command you run yourself,
+  and every run writes its own undo file. Skip it and the launcher still works.
+
+Measured on the reference device — a 1 GB RAM Mi TV 4I at 720p — a frame costs about 13–16 ms, so it
+holds 60 fps with the occasional dropped frame, and `dumpsys gfxinfo` reports **no frames at all**
+while nothing is moving.
 
 **[Install from a laptop, step by step](docs/install-with-a-laptop.md)** ·
 **[Block the bloatware](#block-the-bloatware-and-the-tracking)** ·
@@ -151,15 +157,16 @@ when something is actually moving.
 - **The rail** cross-fades the entire scene through a single `navAlpha`, including a camera
   transform on the backdrop and a second moon glow.
 
-The result is roughly 13 ms per frame on an Amlogic GPU, and zero frames drawn when idle.
+The result is about 13–16 ms per frame on an Amlogic GPU, and no frames drawn while idle.
 
 ---
 
 ## Which televisions this runs on
 
 LightHouse TV is an Android TV app, so it runs on **anything running Android TV OS — Android 8.0
-(API 26) or newer.** The install is a normal sideload: root is never needed and nothing on the TV is
-modified beyond which app answers the Home button.
+(API 26) or newer.** The install is a normal sideload: root is never needed, and the only thing that
+changes is which app answers the Home button. (The [cleanup](#block-the-bloatware-and-the-tracking)
+is a separate, opt-in step with its own undo.)
 
 | Television | Runs it | Where debugging lives |
 | --- | --- | --- |
