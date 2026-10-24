@@ -1,0 +1,50 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make the wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build release APK
+        run: ./gradlew --no-daemon --console=plain assembleRelease -x lintVitalRelease -x lintVitalAnalyzeRelease
+
+      - name: Rename for humans
+        run: cp app/build/outputs/apk/release/app-release.apk lighthouse-tv-1.0.0.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mandala-apk
+          path: lighthouse-tv-1.0.0.apk
+          if-no-files-found: error
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lighthouse-tv-1.0.0.apk
+          generate_release_notes: true

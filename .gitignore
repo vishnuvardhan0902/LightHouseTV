@@ -1,0 +1,18 @@
+# Build output
+build/
+app/build/
+.gradle/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Signing material — never commit a real keystore
+*.jks
+*.keystore
+
+# Machine-local setup used while developing the launcher: personal build scripts, device
+# addresses, throwaway screenshots. Nothing here is needed to build or install from a clone.
+local/

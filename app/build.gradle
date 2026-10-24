@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.application'
+}
+
+// A sideload-only TV app, so the signature only has to be stable, never secret: point
+// LIGHTHOUSE_KEYSTORE at your own keystore if you like, otherwise the standard debug keystore is used
+// and the Android toolchain creates it on first build.
+def tvKey = System.getenv('LIGHTHOUSE_KEYSTORE') ?: System.getenv('CYTV_DEBUG_KEYSTORE')
+def hasTvKey = tvKey != null && file(tvKey).exists()
+
+android {
+    namespace 'tv.lighthouse.launcher'
+    compileSdk 34
+
+    signingConfigs {
+        tv {
+            if (hasTvKey) {
+                storeFile file(tvKey)
+                storePassword System.getenv('LIGHTHOUSE_STORE_PASSWORD') ?: 'android'
+                keyAlias System.getenv('LIGHTHOUSE_KEY_ALIAS') ?: 'androiddebugkey'
+                keyPassword System.getenv('LIGHTHOUSE_KEY_PASSWORD') ?: 'android'
+            }
+        }
+    }
+
+    defaultConfig {
+        applicationId 'tv.lighthouse.launcher'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig hasTvKey ? signingConfigs.tv : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+    }
+}
